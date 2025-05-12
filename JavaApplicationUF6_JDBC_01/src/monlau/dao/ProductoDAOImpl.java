@@ -16,9 +16,9 @@ import java.sql.*;
 public class ProductoDAOImpl implements ProductoDAO {
 
     static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://localhost:3306/inventario?useSSL=false";
+    static final String DB_URL = "jdbc:mysql://localhost:3306/cqr_db?useSSL=false";
     static final String DB_USR = "root";
-    static final String DB_PWD = "";
+    static final String DB_PWD = "admin123";
 
     /**
      * Load the driver class
@@ -57,13 +57,46 @@ public class ProductoDAOImpl implements ProductoDAO {
             }
         }
     }
-
+    
     public void update(Producto producto) {
+        Connection conn =  null;
+        
+        try{
+            registerDriver();
+            conn =  DriverManager.getConnection(DB_URL, DB_USR,DB_PWD);
+            String sql =  "UPDATE producto SET nombre = ?, precio = ? WHERE id = ?";
+            try(PreparedStatement ps =  conn.prepareStatement(sql)){
+                ps.setString(1, producto.getNombre());
+                ps.setDouble(2,producto.getPrecio());
+                ps.setInt(3, producto.getId());
+                ps.executeUpdate();
+            }
+        }catch(SQLException ex){
+            throw new RuntimeException(ex);
+        }
 
     }
 
-    public void delete(Producto producto) {
-
+        public void delete(Producto producto) {
+        Connection conn = null;
+        try {
+            registerDriver();
+            conn = DriverManager.getConnection(DB_URL, DB_USR, DB_PWD);
+            Statement st = conn.createStatement();
+            
+             st.executeUpdate("DELETE FROM producto WHERE id=" + producto.getId());
+            
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }  finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
 
     public Producto read(Integer id) {
